@@ -1,42 +1,100 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-typescript" target="_blank" rel="noopener">typescript</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-router" target="_blank" rel="noopener">router</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+    <h1>{{ msg }}{{name}}</h1>
+    <h2>Like:</h2>
+    <div v-for="item in like" :key="item">{{item}}</div>
+    <h2>My Full Name is {{fullName}}</h2>
+    <button @click="clickMe">演示一下方法：methods</button>
+    <h2>子组件改变后传回父组件的值：{{num}}</h2>
+    <Project @add-one="addOne"></Project>
+    
   </div>
 </template>
 
+// 为了支持 TS，需要设置 script 标签 中 lang="ts"
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+// vue-property-decorator 是一个第三方包，它使用了 Vue 类组件包，并在此基础上添加了更多的装饰器
+// 注意：后面会有多次运用到它
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+// 引入一个组件
+import Project from '@/components/Project.vue'
+// 使用 Vuex
+import { namespace } from 'vuex-class'
+const user = namespace('user')
 
-@Component
+@Component({
+  name: 'HelloWorld',
+  components: {
+    Project
+  }
+})
 export default class HelloWorld extends Vue {
+  // 使用 Vuex
+  @user.State
+  public myName!: string
+  @user.Getter
+  public nameUpperCase!: string
+
+  @user.Action
+  public updateName!: (newName: string) => void
+  // props 的书
   @Prop() private msg!: string;
+  @Prop({
+    default: 'Gopal',
+    required: false,
+    type: String
+  }) readonly name!: string;
+  // data 的书写
+  private like: Array<string> = [
+    "coffee",
+    "FE"
+  ]
+  private firstName: string = ''
+  private lastName: string = 'Feng'
+  private num: number = 0
+  // computed 的书写
+  get fullName(): string {
+    console.log('Get fullName')
+    return this.firstName+ ' '+ this.lastName
+  }
+  set fullName(newValue: string) {
+    console.log('Set fullName')
+    let names = newValue.split(' ')
+    this.firstName = names[0]
+    this.lastName = names[1]
+  }
+  // methods
+  public clickMe():void {
+    console.log('方法的使用');
+    console.log(this.addNum(4, 2))
+    alert('感谢你的点赞和关注');
+  }
+  public addNum(num1: number, num2: number) {
+    return num1 + num2;
+  }
+  // 验证组件通信
+  addOne(n: number) {
+    this.num = n
+  }
+  // Watch 的使用
+  @Watch('fullName', {
+    immediate: true,
+    deep: true
+  })
+  nameChanged(newVal: string, oldVal: string) {
+    console.log('watch----', newVal, oldVal);
+  }
+  // 生命周期书写
+  created() {
+    this.fullName = 'Gopal Feng'
+  }
+  mounted() {
+    console.log('mounted')
+    this.updateName('Hello TS')
+  }
+  beforeUpdate() {
+    console.log('beforeUpdate')
+  }
 }
 </script>
 
