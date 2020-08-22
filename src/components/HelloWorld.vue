@@ -6,7 +6,7 @@
     <h2>My Full Name is {{fullName}}</h2>
     <button @click="clickMe">演示一下方法：methods</button>
     <h2>子组件改变后传回父组件的值：{{num}}</h2>
-    <Project @add-one="addOne"></Project>
+    <Project @add-one="someMethod"></Project>
     
   </div>
 </template>
@@ -73,7 +73,7 @@ export default class HelloWorld extends Vue {
     return num1 + num2;
   }
   // 验证组件通信
-  addOne(n: number) {
+  someMethod(n: number) {
     this.num = n
   }
   // Watch 的使用
